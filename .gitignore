@@ -1,5 +1,7 @@
 dist
 package
 .DS_Store
-.slack/apps.dev.json
+.slack/*.json
 .env
+
+external_auth/google_provider.ts
