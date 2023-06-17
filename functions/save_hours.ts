@@ -2,7 +2,7 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 
 // Configuration information for the storing spreadsheet
 // https://developers.google.com/sheets/api/guides/concepts#expandable-1
-const GOOGLE_SPREADSHEET_RANGE = "A2:E2";
+const GOOGLE_SPREADSHEET_RANGE = "C2";
 
 /**
  * Functions are reusable building blocks of automation that accept
@@ -21,53 +21,34 @@ export const SaveHoursFunctionDefinition = DefineFunction({
         type: Schema.slack.types.oauth2,
         oauth2_provider_key: "google",
       },
-      employee: {
-        type: Schema.slack.types.user_id,
-        description: "Employee logging hours",
-      },
-      time_in: {
-        type: Schema.slack.types.timestamp,
-        description: "Start time for the date",
-      },
-      time_out: {
-        type: Schema.slack.types.timestamp,
-        description: "End time for the date",
-      },
-      breaks: {
-        type: Schema.types.integer,
+      text: {
+        type: Schema.types.string,
         description: "Minutes of break time taken",
       },
     },
-    required: ["googleAccessTokenId", "employee", "time_in", "time_out"],
+    required: [
+      "googleAccessTokenId",
+      "text",
+    ],
   },
   output_parameters: {
     properties: {
-      hours: {
-        type: Schema.types.number,
+      text: {
+        type: Schema.types.string,
         description: "Total number of hours worked",
       },
     },
-    required: ["hours"],
+    required: ["text"],
   },
 });
 
 export default SlackFunction(
   SaveHoursFunctionDefinition,
   async ({ inputs, client, env }) => {
-    const { employee, time_in, time_out, breaks } = inputs;
+    const { text } = inputs;
 
-    const startDate = new Date(time_in * 1000);
-    const endDate = new Date(time_out * 1000);
-    const timeOff = breaks ?? 0;
-    const hours = (time_out - time_in - timeOff * 60) / 3600;
-
-    // Validate inputs
-    if (time_out < time_in) {
-      return { error: `Start time is after end time` };
-    }
-
-    if (time_out - time_in < timeOff * 60) {
-      return { error: `Break time exceeds shift duration` };
+    if (!text.match(/https?:\/\//)) {
+      return { outputs: { text } };
     }
 
     // Collect Google access token
@@ -90,7 +71,7 @@ export default SlackFunction(
       body: JSON.stringify({
         range: GOOGLE_SPREADSHEET_RANGE,
         majorDimension: "ROWS",
-        values: [[employee, startDate, endDate, timeOff, hours]],
+        values: [[text]],
       }),
     });
 
@@ -100,6 +81,6 @@ export default SlackFunction(
       };
     }
 
-    return { outputs: { hours } };
+    return { outputs: { text } };
   },
 );

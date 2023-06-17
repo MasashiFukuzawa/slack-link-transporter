@@ -34,33 +34,19 @@ const timesheetForm = CollectHoursWorkflow.addStep(
     submit_label: "Save",
     fields: {
       elements: [{
-        name: "time_in",
-        title: "Time in",
-        type: Schema.slack.types.timestamp,
-        default: Math.floor(new Date().setHours(9, 0, 0) / 1000),
-      }, {
-        name: "time_out",
-        title: "Time out",
-        type: Schema.slack.types.timestamp,
-        default: Math.floor(new Date().setHours(17, 0, 0) / 1000),
-      }, {
-        name: "breaks",
-        title: "Breaks",
-        type: Schema.types.integer,
+        name: "text",
+        title: "Text",
+        type: Schema.types.string,
         description: "Total break time in minutes",
-        minimum: 0,
       }],
-      required: ["time_in", "time_out"],
+      required: ["text"],
     },
   },
 );
 
 CollectHoursWorkflow.addStep(SaveHoursFunctionDefinition, {
   googleAccessTokenId: { credential_source: "DEVELOPER" },
-  employee: CollectHoursWorkflow.inputs.interactivity.interactor.id,
-  time_in: timesheetForm.outputs.fields.time_in,
-  time_out: timesheetForm.outputs.fields.time_out,
-  breaks: timesheetForm.outputs.fields.breaks,
+  text: timesheetForm.outputs.fields.text,
 });
 
 export default CollectHoursWorkflow;
