@@ -48,6 +48,9 @@ $ git clone git@github.com:MasashiFukuzawa/slack-link-transporter.git
 
 # Change into the project directory
 $ cd slack-link-transporter
+
+# Add your slack channel ID and slack user ID into `external_auth/google_provider.ts`
+$ cp triggers/transport-urls.ts.sample triggers/transport-urls.ts
 ```
 
 ## Prepare Google Services
@@ -94,6 +97,11 @@ client secret and access token.
 
 > :warning: Running these commands will warn you that a client secret must be
 > added for your OAuth2 provider. We'll take care of this in the next step!
+
+```sh
+$ cp external_auth/google_provider.ts.sample external_auth/google_provider.ts
+# Add your client ID to the `client_id` field in `external_auth/google_provider.ts`
+```
 
 #### Save the Client Secret
 
