@@ -33,7 +33,17 @@ const { createContext } = SlackFunctionTester("transport_urls");
 Deno.test("Fail on invalid auth token id", async () => {
   const inputs = {
     googleAccessTokenId: "INVALID_TOKEN_ID",
-    text: "https://example.com",
+    text: [
+      {
+        text: {
+          text: "test\n<https://example.com>",
+          type: "mrkdwn",
+          verbatim: false,
+        },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
   };
 
   const { error } = await transportUrlFunction(createContext({ inputs }));
@@ -43,7 +53,17 @@ Deno.test("Fail on invalid auth token id", async () => {
 Deno.test("Transport a http URL", async () => {
   const inputs = {
     googleAccessTokenId: "VALID_TOKEN_ID",
-    text: "http://example.com",
+    text: [
+      {
+        text: {
+          text: "test\n<http://example.com>",
+          type: "mrkdwn",
+          verbatim: false,
+        },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
   };
 
   const { outputs, error } = await transportUrlFunction(
@@ -56,7 +76,17 @@ Deno.test("Transport a http URL", async () => {
 Deno.test("Transport a https URL", async () => {
   const inputs = {
     googleAccessTokenId: "VALID_TOKEN_ID",
-    text: "https://example.com",
+    text: [
+      {
+        text: {
+          text: "test\n<https://example.com>",
+          type: "mrkdwn",
+          verbatim: false,
+        },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
   };
 
   const { outputs, error } = await transportUrlFunction(
@@ -69,7 +99,13 @@ Deno.test("Transport a https URL", async () => {
 Deno.test("Do not raise error when text is not URL", async () => {
   const inputs = {
     googleAccessTokenId: "VALID_TOKEN_ID",
-    text: "plain text",
+    text: [
+      {
+        text: { text: "plain text", type: "mrkdwn", verbatim: false },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
   };
 
   const { outputs, error } = await transportUrlFunction(

@@ -22,7 +22,7 @@ export const transportUrlFunctionDefinition = DefineFunction({
         oauth2_provider_key: "google",
       },
       text: {
-        type: Schema.types.string,
+        type: Schema.slack.types.rich_text,
         description: "Text posted in channel (Not always a URL)",
       },
     },
@@ -34,7 +34,7 @@ export const transportUrlFunctionDefinition = DefineFunction({
   output_parameters: {
     properties: {
       text: {
-        type: Schema.types.string,
+        type: Schema.slack.types.rich_text,
         description: "Text posted in channel (Not always a URL)",
       },
     },
@@ -42,14 +42,40 @@ export const transportUrlFunctionDefinition = DefineFunction({
   },
 });
 
+const extractUrl = (input: string): string => {
+  const regex = /<([^>]+)>/;
+  const match = input.match(regex);
+
+  if (match && match[1]) {
+    return match[1];
+  }
+
+  throw new Error(`Failed to extract URL from ${input}`);
+};
+
 export default SlackFunction(
   transportUrlFunctionDefinition,
   async ({ inputs, client, env }) => {
-    const { text } = inputs;
+    /**
+    example of inputs is:
+      inputs {
+        text: [{
+          text: { text: "test\n<https://example.com>", type: "mrkdwn", verbatim: false },
+          type: "section",
+          block_id: "v43o5"
+        }],
+        googleAccessTokenId: "sample_token_id"
+      }
+    */
+    const text: string = inputs.text[0].text.text;
 
-    if (!text.match(/^http(s)?:\/\//)) {
+    // Matches lines that start with `<http(s)`, end with `>`, and do not span multiple lines
+    if (!text.match(/^<https?:\/\/[^>\n]+>$/m)) {
+      console.log(`Not a URL: ${text}`);
       return { outputs: { text } };
     }
+
+    const extractedUrl = extractUrl(text);
 
     // Collect Google access token
     const auth = await client.apiCall("apps.auth.external.get", {
@@ -71,7 +97,7 @@ export default SlackFunction(
       body: JSON.stringify({
         range: GOOGLE_SPREADSHEET_RANGE,
         majorDimension: "ROWS",
-        values: [["", "", text]],
+        values: [["", "", extractedUrl]],
       }),
     });
 
@@ -82,6 +108,6 @@ export default SlackFunction(
       };
     }
 
-    return { outputs: { text } };
+    return { outputs: { text: extractedUrl } };
   },
 );

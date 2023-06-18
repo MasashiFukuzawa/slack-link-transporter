@@ -12,41 +12,18 @@ const transportUrlsWorkflow = DefineWorkflow({
   description: "Transport URLs to a Google sheet",
   input_parameters: {
     properties: {
-      interactivity: {
-        type: Schema.slack.types.interactivity,
+      text: {
+        description: "The message to respond to",
+        type: Schema.types.string,
       },
     },
-    required: ["interactivity"],
+    required: ["text"],
   },
 });
 
-/**
- * For collecting input from users, we recommend the
- * built-in OpenForm function as a first step.
- * https://api.slack.com/automation/functions#open-a-form
- */
-const textForm = transportUrlsWorkflow.addStep(
-  Schema.slack.functions.OpenForm,
-  {
-    title: "Transport URLs",
-    description: "Transport URLs",
-    interactivity: transportUrlsWorkflow.inputs.interactivity,
-    submit_label: "Post",
-    fields: {
-      elements: [{
-        name: "text",
-        title: "Text",
-        type: Schema.types.string,
-        description: "Text posted in channel (Not always a URL)",
-      }],
-      required: ["text"],
-    },
-  },
-);
-
 transportUrlsWorkflow.addStep(transportUrlFunctionDefinition, {
   googleAccessTokenId: { credential_source: "DEVELOPER" },
-  text: textForm.outputs.fields.text,
+  text: transportUrlsWorkflow.inputs.text,
 });
 
 export default transportUrlsWorkflow;

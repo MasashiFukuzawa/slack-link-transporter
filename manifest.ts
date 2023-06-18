@@ -15,5 +15,11 @@ export default Manifest({
   workflows: [transportUrlsWorkflow],
   externalAuthProviders: [GoogleProvider],
   outgoingDomains: ["sheets.googleapis.com"],
-  botScopes: ["commands"],
+  botScopes: [
+    "channels:history",
+    "groups:history",
+    "im:read",
+    "mpim:read",
+    "im:history",
+  ],
 });
