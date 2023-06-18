@@ -1,15 +1,15 @@
 import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
-import { SaveHoursFunctionDefinition } from "../functions/save_hours.ts";
+import { transportUrlFunctionDefinition } from "../functions/transport_urls.ts";
 
 /**
  * A workflow is a set of steps that are executed in order.
  * Each step in a workflow is a function.
  * https://api.slack.com/automation/workflows
  */
-const CollectHoursWorkflow = DefineWorkflow({
-  callback_id: "collect_hours",
-  title: "Collect billable hours",
-  description: "Gather and save timesheet info to a Google sheet",
+const transportUrlsWorkflow = DefineWorkflow({
+  callback_id: "transport_urls_workflow",
+  title: "Transport URLs",
+  description: "Transport URLs to a Google sheet",
   input_parameters: {
     properties: {
       interactivity: {
@@ -25,28 +25,28 @@ const CollectHoursWorkflow = DefineWorkflow({
  * built-in OpenForm function as a first step.
  * https://api.slack.com/automation/functions#open-a-form
  */
-const timesheetForm = CollectHoursWorkflow.addStep(
+const textForm = transportUrlsWorkflow.addStep(
   Schema.slack.functions.OpenForm,
   {
-    title: "Collect hours",
-    description: "Log the hours you've worked into a timesheet",
-    interactivity: CollectHoursWorkflow.inputs.interactivity,
-    submit_label: "Save",
+    title: "Transport URLs",
+    description: "Transport URLs",
+    interactivity: transportUrlsWorkflow.inputs.interactivity,
+    submit_label: "Post",
     fields: {
       elements: [{
         name: "text",
         title: "Text",
         type: Schema.types.string,
-        description: "Total break time in minutes",
+        description: "Text posted in channel (Not always a URL)",
       }],
       required: ["text"],
     },
   },
 );
 
-CollectHoursWorkflow.addStep(SaveHoursFunctionDefinition, {
+transportUrlsWorkflow.addStep(transportUrlFunctionDefinition, {
   googleAccessTokenId: { credential_source: "DEVELOPER" },
-  text: timesheetForm.outputs.fields.text,
+  text: textForm.outputs.fields.text,
 });
 
-export default CollectHoursWorkflow;
+export default transportUrlsWorkflow;

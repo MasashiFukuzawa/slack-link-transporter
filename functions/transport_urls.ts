@@ -2,7 +2,7 @@ import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
 
 // Configuration information for the storing spreadsheet
 // https://developers.google.com/sheets/api/guides/concepts#expandable-1
-const GOOGLE_SPREADSHEET_RANGE = "C2";
+const GOOGLE_SPREADSHEET_RANGE = "A2:C2";
 
 /**
  * Functions are reusable building blocks of automation that accept
@@ -10,11 +10,11 @@ const GOOGLE_SPREADSHEET_RANGE = "C2";
  * be used independently or as steps in workflows.
  * https://api.slack.com/automation/functions/custom
  */
-export const SaveHoursFunctionDefinition = DefineFunction({
-  callback_id: "save_hours",
-  title: "Save logged hours",
-  description: "Store input hours in a Google sheet",
-  source_file: "functions/save_hours.ts",
+export const transportUrlFunctionDefinition = DefineFunction({
+  callback_id: "transport_urls_function",
+  title: "Transport URLs posted in channel on a Google sheet",
+  description: "Transport URLs posted in channel on a Google sheet",
+  source_file: "functions/transport_urls.ts",
   input_parameters: {
     properties: {
       googleAccessTokenId: {
@@ -23,7 +23,7 @@ export const SaveHoursFunctionDefinition = DefineFunction({
       },
       text: {
         type: Schema.types.string,
-        description: "Minutes of break time taken",
+        description: "Text posted in channel (Not always a URL)",
       },
     },
     required: [
@@ -35,7 +35,7 @@ export const SaveHoursFunctionDefinition = DefineFunction({
     properties: {
       text: {
         type: Schema.types.string,
-        description: "Total number of hours worked",
+        description: "Text posted in channel (Not always a URL)",
       },
     },
     required: ["text"],
@@ -43,11 +43,11 @@ export const SaveHoursFunctionDefinition = DefineFunction({
 });
 
 export default SlackFunction(
-  SaveHoursFunctionDefinition,
+  transportUrlFunctionDefinition,
   async ({ inputs, client, env }) => {
     const { text } = inputs;
 
-    if (!text.match(/https?:\/\//)) {
+    if (!text.match(/^http(s)?:\/\//)) {
       return { outputs: { text } };
     }
 
@@ -71,13 +71,14 @@ export default SlackFunction(
       body: JSON.stringify({
         range: GOOGLE_SPREADSHEET_RANGE,
         majorDimension: "ROWS",
-        values: [[text]],
+        values: [["", "", text]],
       }),
     });
 
     if (!sheets.ok) {
       return {
-        error: `Failed to save hours to the timesheet: ${sheets.statusText}`,
+        error:
+          `Failed to transport a url to the Google sheet: ${sheets.statusText}`,
       };
     }
 

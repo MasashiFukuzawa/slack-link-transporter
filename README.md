@@ -1,9 +1,8 @@
-# Timesheet Approval
+# slack-link-transporter
 
-This automation features a workflow that collects input from a form in Slack and
-saves the results to a Google Sheet.
-
-https://user-images.githubusercontent.com/18134219/214685659-c48d0e5e-af02-4f11-ba9a-5d2857f1fb5d.mov
+Automatically transport URLs posted in Slack to your spreadsheet. This is
+intended to be used in conjunction with
+[webpage-summarizer](https://github.com/MasashiFukuzawa/webpage-summarizer).
 
 **Guide Outline**:
 
@@ -24,7 +23,7 @@ https://user-images.githubusercontent.com/18134219/214685659-c48d0e5e-af02-4f11-
 
 ## Included Workflows
 
-- **Collect billable hours**: Gather and save timesheet info to a Google sheet
+- **Transport URLs**: Transport URLs to a Google sheet
 
 ## Setup
 
@@ -45,10 +44,10 @@ Start by cloning this repository:
 
 ```zsh
 # Clone this project onto your machine
-$ slack create my-app -t slack-samples/deno-timesheet-approval
+$ git clone git@github.com:MasashiFukuzawa/slack-link-transporter.git
 
 # Change into the project directory
-$ cd my-app
+$ cd slack-link-transporter
 ```
 
 ## Prepare Google Services
@@ -133,7 +132,7 @@ To prepare this external datastore, start by
 using your authenticated account, then add the following headers to Row 1:
 
 ```
-Employee | Time in | Time out | Breaks (min) | Hours
+content	| summary	| url	| date
 ```
 
 Designate this spreadsheet as the desired datastore through environment
@@ -223,7 +222,7 @@ or deployed!**
 To manually create a trigger, use the following command:
 
 ```zsh
-$ slack trigger create --trigger-def triggers/collect_hours_trigger.ts
+$ slack trigger create --trigger-def triggers/transport_urls_trigger.ts
 ```
 
 ## Datastores
@@ -234,8 +233,9 @@ infrastructure. The use of a datastore requires the
 
 ## Testing
 
-For an example of how to test a function, see `functions/save_hours_test.ts`.
-Test filenames should be suffixed with `_test`.
+For an example of how to test a function, see
+`functions/transport_urls_test.ts`. Test filenames should be suffixed with
+`_test`.
 
 Run all tests with `deno test`:
 
