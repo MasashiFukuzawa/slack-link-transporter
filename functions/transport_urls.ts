@@ -68,14 +68,24 @@ export default SlackFunction(
       }
     */
     const text: string = inputs.text[0].text.text;
+    const trimmedText = text.trim();
 
-    // Matches lines that start with `<http(s)`, end with `>`, and do not span multiple lines
-    if (!text.match(/^<https?:\/\/[^>\n]+>$/m)) {
+    // Matches lines that start with `<http(s)`, end with `>`,
+    // have no other strings before or after,
+    // and do not span multiple lines or include multiple URLs or only whitespace
+    if (!trimmedText.match(/^(?!^\s*$)<https?:\/\/[^>\n]+>$/)) {
       console.log(`Not a URL: ${text}`);
       return { outputs: { text } };
     }
 
-    const extractedUrl = extractUrl(text);
+    // Ignore webpages with authentication
+    // If you need other exceptions, add them here
+    if (trimmedText.match(/docs.google.com|drive.google.com/)) {
+      console.log(`Not target: ${text}`);
+      return { outputs: { text } };
+    }
+
+    const extractedUrl = extractUrl(trimmedText);
 
     // Collect Google access token
     const auth = await client.apiCall("apps.auth.external.get", {

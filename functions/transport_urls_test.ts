@@ -36,7 +36,7 @@ Deno.test("Fail on invalid auth token id", async () => {
     text: [
       {
         text: {
-          text: "test\n<https://example.com>",
+          text: "<https://example.com>",
           type: "mrkdwn",
           verbatim: false,
         },
@@ -56,7 +56,7 @@ Deno.test("Transport a http URL", async () => {
     text: [
       {
         text: {
-          text: "test\n<http://example.com>",
+          text: "<http://example.com>",
           type: "mrkdwn",
           verbatim: false,
         },
@@ -79,7 +79,7 @@ Deno.test("Transport a https URL", async () => {
     text: [
       {
         text: {
-          text: "test\n<https://example.com>",
+          text: "<https://example.com>",
           type: "mrkdwn",
           verbatim: false,
         },
@@ -96,7 +96,7 @@ Deno.test("Transport a https URL", async () => {
   assertEquals(outputs?.text, "https://example.com");
 });
 
-Deno.test("Do not raise error when text is not URL", async () => {
+Deno.test("Skip when text is not URL", async () => {
   const inputs = {
     googleAccessTokenId: "VALID_TOKEN_ID",
     text: [
@@ -113,4 +113,73 @@ Deno.test("Do not raise error when text is not URL", async () => {
   );
   assertEquals(error, undefined);
   assertEquals(outputs?.text, "plain text");
+});
+
+Deno.test("Skip when extra text includes", async () => {
+  const inputs = {
+    googleAccessTokenId: "VALID_TOKEN_ID",
+    text: [
+      {
+        text: {
+          text: "test\n<https://example.com>",
+          type: "mrkdwn",
+          verbatim: false,
+        },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
+  };
+
+  const { outputs, error } = await transportUrlFunction(
+    createContext({ inputs }),
+  );
+  assertEquals(error, undefined);
+  assertEquals(outputs?.text, "test\n<https://example.com>");
+});
+
+Deno.test("Skip when google docs", async () => {
+  const inputs = {
+    googleAccessTokenId: "VALID_TOKEN_ID",
+    text: [
+      {
+        text: {
+          text: "<https://docs.google.com>",
+          type: "mrkdwn",
+          verbatim: false,
+        },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
+  };
+
+  const { outputs, error } = await transportUrlFunction(
+    createContext({ inputs }),
+  );
+  assertEquals(error, undefined);
+  assertEquals(outputs?.text, "<https://docs.google.com>");
+});
+
+Deno.test("Skip when google drive", async () => {
+  const inputs = {
+    googleAccessTokenId: "VALID_TOKEN_ID",
+    text: [
+      {
+        text: {
+          text: "<https://drive.google.com>",
+          type: "mrkdwn",
+          verbatim: false,
+        },
+        type: "section",
+        block_id: "v43o5",
+      },
+    ],
+  };
+
+  const { outputs, error } = await transportUrlFunction(
+    createContext({ inputs }),
+  );
+  assertEquals(error, undefined);
+  assertEquals(outputs?.text, "<https://drive.google.com>");
 });
