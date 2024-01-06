@@ -1,8 +1,9 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
+import dayjs from "https://cdn.skypack.dev/dayjs?dts";
 
 // Configuration information for the storing spreadsheet
 // https://developers.google.com/sheets/api/guides/concepts#expandable-1
-const GOOGLE_SPREADSHEET_RANGE = "A2:C2";
+const GOOGLE_SPREADSHEET_RANGE = "A2:D2";
 
 /**
  * Functions are reusable building blocks of automation that accept
@@ -99,6 +100,7 @@ export default SlackFunction(
     // Append times to spreadsheet
     const url =
       `https://sheets.googleapis.com/v4/spreadsheets/${env.GOOGLE_SPREADSHEET_ID}/values/${GOOGLE_SPREADSHEET_RANGE}:append?valueInputOption=USER_ENTERED`;
+    const today = dayjs().format("YYYY/MM/DD");
     const sheets = await fetch(url, {
       method: "POST",
       headers: {
@@ -107,7 +109,7 @@ export default SlackFunction(
       body: JSON.stringify({
         range: GOOGLE_SPREADSHEET_RANGE,
         majorDimension: "ROWS",
-        values: [["", "", extractedUrl]],
+        values: [["", "", extractedUrl, today]],
       }),
     });
 
